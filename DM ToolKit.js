@@ -1,8 +1,8 @@
 const DMToolKit = (() => {
     // VERSION INFORMATION
     const DMToolKit_Author = "Sky";
-    const DMToolKit_Version = "4.3.0";
-    const DMToolKit_LastUpdated = 1531931064;
+    const DMToolKit_Version = "4.3.1";
+    const DMToolKit_LastUpdated = 1532001943;
     
     // BAR CONFIGURATION -- Set to 0 to disable. Cannot use same bar # twice.
     const ARMOR_CLASS_BAR        = 2;
@@ -57,12 +57,14 @@ const DMToolKit = (() => {
 	}
 	const announceNewTurn = function(current, previous) {
         if (_.isEmpty(current) || _.isEmpty(previous)) return;
-        if (current[0].id !== -1 && current[0].id !== previous[0].id && getObj("graphic", current[0].id).get("layer") !== "gmlayer" && current[0].id !== previous[0].id) {
+        if (current[0].id !== "-1" && current[0].id !== previous[0].id && getObj("graphic", current[0].id).get("layer") !== "gmlayer" && current[0].id !== previous[0].id) {
             let Token = getObj("graphic", current[0].id);
             let Character = (Token.get("represents") !== "") ? getObj("character", Token.get("represents")) : "";
+            let ControlledBy = (Character !== "") ? Character.get("controlledby") : "";
+            let Player = (ControlledBy !== "" && ControlledBy.startsWith("-")) ? Character.get("controlledby").split(",")[0] : (ControlledBy !== "" && ControlledBy.startsWith("all,")) ? Character.get("controlledby").split(",")[1] : "";
             let isNPC = (Character !== "") ? Boolean(Number(getAttrByName(Character.id, "npc"))) : true;
             let Message = ((isNPC && SHOW_NPC_NAMES) || isNPC === false) ? (Token.get("name").startsWith("Round")) ? Token.get("name") + " " + current[0].pr : Token.get("name") : "NPC";
-            let BGColor = (Token.get("name") === "Round") ? "#000000": (isNPC) ? NPC_COLOR : (USE_PLAYER_COLOR && Character.get("controlledby") !== "") ? getObj("player", Character.get("controlledby").split(",")[0]).get("color") : PC_COLOR;
+            let BGColor = (Token.get("name") === "Round") ? "#000000": (isNPC) ? NPC_COLOR : (USE_PLAYER_COLOR && Player !== "") ? getObj("player", Player).get("color") : PC_COLOR;
             let TXColor = (getBrightness(BGColor) < (255 / 2)) ? "#FFF" : "#000";
             let TXShadow = (TXColor == "#000") ? "#FFF" : "#000";
             let OuterStyle = `line-height: 40px; max-height: 40px; width: 100%; margin: 11px 0px 5px -7px; padding: 0px`;
@@ -529,7 +531,7 @@ const DMToolKit = (() => {
     const handleTurnOrderChange = function (obj, prev) {
         let current = JSON.parse(obj.get("turnorder") || []);
         let previous = JSON.parse(prev["turnorder"]) || [];
-        if (_.isEmpty(current) || current[0].id === previous[0].id) return;
+        if (_.isEmpty(current) || current[0].id === "-1" || current[0].id === previous[0].id) return;
         if (obj.get("turnorder") && !obj.get("initiativepage")) Campaign().set("initiativepage", true);
         if (SHOW_GREEN_DOT && previous.length > 0 && previous[0].id !== -1 && getObj("graphic", previous[0].id) !== undefined) getObj("graphic", previous[0].id).set("status_green", false);
         if (SHOW_GREEN_DOT && current.length > 0 && current[0].id !== -1 && getObj("graphic", current[0].id) !== undefined) getObj("graphic", current[0].id).set("status_green", true);
@@ -538,7 +540,7 @@ const DMToolKit = (() => {
             sendPing(-100, -100, Campaign().get("playerpageid"), null, false);
             sendPing(getObj("graphic", current[0].id).get("left"), getObj("graphic", current[0].id).get("top"), Campaign().get("playerpageid"), null, true);
         }
-        toFront(getObj("graphic", current[0].id));
+        if (current[0].id !== "-1") toFront(getObj("graphic", current[0].id));
     }
     const registerEventHandlers = function() {
         on(`add:graphic`, handleTokenDrop);
