@@ -1,14 +1,14 @@
 const DMToolKit = (() => {
     // VERSION INFORMATION
     const DMToolKit_Author = "Sky";
-    const DMToolKit_Version = "4.3.1";
-    const DMToolKit_LastUpdated = 1532001943;
+    const DMToolKit_Version = "4.3.2";
+    const DMToolKit_LastUpdated = 1532061192;
     
     // BAR CONFIGURATION -- Set to 0 to disable. Cannot use same bar # twice.
     const ARMOR_CLASS_BAR        = 2;
-    const HIT_POINT_BAR          = 1;
-    const PASSIVE_PERCEPTION_BAR = 0;
-    const SPEED_BAR              = 3;
+    const HIT_POINT_BAR          = 3;
+    const PASSIVE_PERCEPTION_BAR = 1;
+    const SPEED_BAR              = 0;
     
     // USER CONFIGURATION -- Set to true/false or hex color code.
     const ANNOUNCE_NEW_TURN     = true;
@@ -358,6 +358,16 @@ const DMToolKit = (() => {
             if (next.id != -1 && SHOW_GREEN_DOT) getObj("graphic", next.id).set("status_green", true);
             if (ANNOUNCE_NEW_TURN) announceNewTurn([next], [current]);
         }
+        if (Command === "!track-effect") {
+            let turn_order = (!Campaign().get("turnorder")) ? [] : JSON.parse(Campaign().get("turnorder"));
+            let Effect = msg.content.split("--")[1].trim() || "Error";
+            let Duration = msg.content.split("--")[2] || 999;
+            let Owner = msg.content.split("--")[3] || "";
+            if (Effect === "Error" || Duration === 999) return;
+            turn_order.push({id: "-1", pr: Duration, custom: Effect + ((Owner !== "") ? ` (${Owner})` : ""), formula: "-1"});
+            Campaign().set("initiativepage", true);
+            Campaign().set("turnorder", JSON.stringify(turn_order));
+        }
         if (Command === "!vision" && playerIsGM(msg.playerid)) {
             // Changes a selected token or tokens vision and light settings. Using the
             // command without an option sets the vision at 5/-1 and sets it to not
@@ -531,17 +541,26 @@ const DMToolKit = (() => {
     const handleTurnOrderChange = function (obj, prev) {
         let current = JSON.parse(obj.get("turnorder") || []);
         let previous = JSON.parse(prev["turnorder"]) || [];
-        if (_.isEmpty(current) || current[0].id === "-1" || current[0].id === previous[0].id) return;
+        if (previous[0].id === "-1" && previous[0].custom !== undefined && parseInt(previous[0].pr, 10) === 0) {
+            sendChat("", `/desc ${previous[0].custom} has ended.`);
+            current.splice(-1);
+            Campaign().set("turnorder", JSON.stringify(current));
+        }
+        if (_.isEmpty(current) || current[0].id === previous[0].id) return;
         if (obj.get("turnorder") && !obj.get("initiativepage")) Campaign().set("initiativepage", true);
         if (SHOW_GREEN_DOT && previous.length > 0 && previous[0].id !== -1 && getObj("graphic", previous[0].id) !== undefined) getObj("graphic", previous[0].id).set("status_green", false);
         if (SHOW_GREEN_DOT && current.length > 0 && current[0].id !== -1 && getObj("graphic", current[0].id) !== undefined) getObj("graphic", current[0].id).set("status_green", true);
         if (ANNOUNCE_NEW_TURN) announceNewTurn(current, previous);
-        if (PULL_GM_TO_TOKEN) {
+        if (PULL_GM_TO_TOKEN && current[0].id !== "-1") {
             sendPing(-100, -100, Campaign().get("playerpageid"), null, false);
             sendPing(getObj("graphic", current[0].id).get("left"), getObj("graphic", current[0].id).get("top"), Campaign().get("playerpageid"), null, true);
         }
         if (current[0].id !== "-1") toFront(getObj("graphic", current[0].id));
     }
+    const sortObject = function(obj) {
+        return Object.keys(obj).sort().reduce((r, k) => (r[k] = obj[k], r), {});
+    }
+    
     const registerEventHandlers = function() {
         on(`add:graphic`, handleTokenDrop);
         on(`change:campaign:turnorder`, handleTurnOrderChange);
@@ -550,9 +569,6 @@ const DMToolKit = (() => {
         on(`destroy:graphic`, handleDeletedToken);
         log("-=> DMToolKit v" + DMToolKit_Version + " <=- [" + (new Date(DMToolKit_LastUpdated * 1000)) + "]");
         //log(Date.now().toString().substr(0, 10));
-    }
-    const sortObject = function(obj) {
-        return Object.keys(obj).sort().reduce((r, k) => (r[k] = obj[k], r), {});
     }
     
     on("ready", function() { registerEventHandlers(); });
