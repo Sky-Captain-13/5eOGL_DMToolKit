@@ -13,6 +13,13 @@ These four commands form the bulk of the Turn Order Tracker part of the Toolkit.
 
 !eot can be used by by any player or the GM to advance the turn order tracker one space. Players can only advance the turn order if the token at the top of the tracker is a token/character they control. Using !eot when it is not their turn will do nothing.
 
+!Track-effect will allow you to add and track spell effects and other short duration items like Rage using the command. You must have a name for the effect and a duration included or nothing will be added to the tracker. When the duration reaches zero, the effect will be removed from the turn order tracker and a simple message saying that the effect has ended will be sent to chat. You can optionally include a character name or other identifier as a third parameter. 
+
+#### Example Macros
+!track-effect --Effect Name --Effect Duration [--Character Name]
+!track-effect --?{Effect Name|} --?{Effect Duration|} --@{selected|token_name}
+!track-effect --Bless --10 --Cleric's Name
+
 ## HEAL & DAMAGE TOKENS
 
 The !heal and !damage commands can be used as simply as !heal 8 or !damage 10 to modify the hit points on a token. The commands can also take die rolls (no spaces in the roll though... so 2d4+2, NOT 2d4 + 2) and normally work on all selected tokens. You can add @{target||token_id} to heal or damage a specific token. This could be used to allow players to deal the damage to the tokens themselves if they want to feel a little more involved, since @{target||token_id} can be used on any token, not just ones you control.
