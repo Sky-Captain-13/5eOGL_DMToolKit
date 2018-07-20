@@ -17,7 +17,9 @@ These four commands form the bulk of the Turn Order Tracker part of the Toolkit.
 
 #### Example Macros
 !track-effect --Effect Name --Effect Duration [--Character Name]
+
 !track-effect --?{Effect Name|} --?{Effect Duration|} --@{selected|token_name}
+
 !track-effect --Bless --10 --Cleric's Name
 
 ## HEAL & DAMAGE TOKENS
