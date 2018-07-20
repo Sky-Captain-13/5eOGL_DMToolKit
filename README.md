@@ -39,6 +39,7 @@ The !heal and !damage commands can be used as simply as !heal 8 or !damage 10 to
 ## LIGHTS & VISION
 
 The !vision macro uses the following to apply light and vision settings to the selected token. 
+
 !vision ?{Light/Vision Source|None,none|Candle,candle|Continual Flame,continual_flame|Fire Beetle,fire_beetle|Darkvision (60ft),darkvision_60|Darkvision (90ft),darkvision_90|Darkvision (120ft),darkvision_120|Daylight,daylight|Everburning Torch,everburning_torch|Lamp,lamp|Lantern (Bullseye),lantern_bullseye|Lantern (Bright),lantern_hooded_bright|Lantern (Dim),lantern_hooded_dim|Light,light|Torch,torch|Sunrod,sunrod} @{selected|token_id}
 
 !dl simply toggles the dynamic lighting on or off on the page you are on. You can also use !dl off or !dl on instead.
