@@ -22,8 +22,8 @@ const DMToolKit = (() => {
     
     // VERSION INFORMATION
     const DMToolKit_Author = "Sky";
-    const DMToolKit_Version = "4.3.3";
-    const DMToolKit_LastUpdated = 1532133214;
+    const DMToolKit_Version = "4.3.5";
+    const DMToolKit_LastUpdated = 1532138699;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -60,9 +60,9 @@ const DMToolKit = (() => {
         if (current[0].id !== "-1" && current[0].id !== previous[0].id && getObj("graphic", current[0].id).get("layer") !== "gmlayer" && current[0].id !== previous[0].id) {
             let Token = getObj("graphic", current[0].id);
             let Character = (Token.get("represents") !== "") ? getObj("character", Token.get("represents")) : "";
-            let ControlledBy = (Character !== "") ? Character.get("controlledby") : "";
+            let ControlledBy = (Character !== "" && Character !== undefined) ? Character.get("controlledby") : "";
             let Player = (ControlledBy !== "" && ControlledBy.startsWith("-")) ? Character.get("controlledby").split(",")[0] : (ControlledBy !== "" && ControlledBy.startsWith("all,")) ? Character.get("controlledby").split(",")[1] : "";
-            let isNPC = (Character !== "") ? Boolean(Number(getAttrByName(Character.id, "npc"))) : true;
+            let isNPC = (Character !== "" && Character !== undefined) ? Boolean(Number(getAttrByName(Character.id, "npc"))) : true;
             let Message = ((isNPC && SHOW_NPC_NAMES) || isNPC === false) ? (Token.get("name").startsWith("Round")) ? Token.get("name") + " " + current[0].pr : Token.get("name") : "NPC";
             let BGColor = (Token.get("name") === "Round") ? "#000000": (isNPC) ? NPC_COLOR : (USE_PLAYER_COLOR && Player !== "") ? getObj("player", Player).get("color") : PC_COLOR;
             let TXColor = (getBrightness(BGColor) < (255 / 2)) ? "#FFF" : "#000";
@@ -71,7 +71,7 @@ const DMToolKit = (() => {
             let InnerStyle = `clear: both; overflow: hidden; line-height: 20px; max-height: 20px; width: 100%; margin: 0px; padding: 0px 0px 2px 0px; font-family: Candal; font-weight: lighter; font-size: 13px; color: ${TXColor}; background-color: ${BGColor}; background-image: linear-gradient(rgba(255, 255, 255, .4), rgba(255, 255, 255, 0)); border: 1px solid #000; border-radius: 4px; text-shadow: -1px -1px 0 ${TXShadow}, 1px -1px 0 ${TXShadow}, -1px 1px 0 ${TXShadow}, -1px -1px 0 ${TXShadow};`;
             let Avatar = (Token !== undefined && Token.get("type") === "graphic") ? `<img src='` + Token.get("imgsrc") + `' style='float: right; height: 40px; width: 40px; margin: -32px -10px 0px 0px;'></img>` : "";
             sendChat("", `/desc <div style='${OuterStyle}'><div style='${InnerStyle}'><span style='padding-right: 20px;'>${Message}</span></div>${Avatar}</div>`);
-            if (SHOW_NPC_STATBLOCK && isNPC && Character !== "") {
+            if (SHOW_NPC_STATBLOCK && isNPC && Character !== "" && Character !== undefined) {
                 let action_style = "color: #404040; background-color: #DCDCDC; border: 1px solid #404040; border-radius: 3px; margin: 1px; padding: 0px 5px; text-decoration: none;"
                 let npc_statblock = `/w GM &{template:traits} {{description=<span style="font-size: 12px;">**Speed:** ${getAttrByName(Character.id, "npc_speed")}<br>**Senses:** ${getAttrByName(Character.id, "npc_senses").replace("blindsight", "Blindsight").replace("darkvision", "Darkvision").replace("passive", "Passive").replace(" , ", "")}<br>**Actions:** `;
                 let actions_list = filterObjs( function(a) { return (a.get("characterid") === Character.id && a.get("name").startsWith("repeating_npcaction") && a.get("name").endsWith("_name")); });
@@ -333,7 +333,7 @@ const DMToolKit = (() => {
                 if (token.get("name") == "Round") {
                     turn_order.push({id: a._id, pr: 999, formula: "+1"});
                 } else {
-                    mod = (token.get("represents") != "") ? parseInt(Math.floor((getAttrByName(token.get("represents"), "dexterity") - 10) / 2)) + parseInt(getAttrByName(token.get("represents"), "initmod")) : 0;
+                    mod = (token.get("represents") !== "" && getObj("character", token.get("represents")) !== undefined) ? parseInt(Math.floor((getAttrByName(token.get("represents"), "dexterity") - 10) / 2)) + parseInt(getAttrByName(token.get("represents"), "initmod")) : 0;
                     index = turn_order.findIndex(x => x.id == a._id);
                     if (index != -1) turn_order[index].pr = Math.floor((Math.random() * 20) + 1) + mod;
                     else turn_order.push({id: a._id, pr: Math.floor((Math.random() * 20) + 1) + mod});
