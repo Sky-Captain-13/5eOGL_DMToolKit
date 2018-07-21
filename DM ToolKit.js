@@ -23,7 +23,7 @@ const DMToolKit = (() => {
     // VERSION INFORMATION
     const DMToolKit_Author = "Sky";
     const DMToolKit_Version = "4.3.3";
-    const DMToolKit_LastUpdated = 1532131711;
+    const DMToolKit_LastUpdated = 1532133214;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -333,7 +333,7 @@ const DMToolKit = (() => {
                 if (token.get("name") == "Round") {
                     turn_order.push({id: a._id, pr: 999, formula: "+1"});
                 } else {
-                    mod = (token.get("represents") != "") ? parseInt(Math.floor((getAttrByName(token.get("represents"), "dexterity") - 10) / 2)) + parseInt(getAttrByName(token.get("represents"), "initmod")) + parseInt(getAttrByName(token.get("represents"), "jack_of_all_trades")) : 0;
+                    mod = (token.get("represents") != "") ? parseInt(Math.floor((getAttrByName(token.get("represents"), "dexterity") - 10) / 2)) + parseInt(getAttrByName(token.get("represents"), "initmod")) : 0;
                     index = turn_order.findIndex(x => x.id == a._id);
                     if (index != -1) turn_order[index].pr = Math.floor((Math.random() * 20) + 1) + mod;
                     else turn_order.push({id: a._id, pr: Math.floor((Math.random() * 20) + 1) + mod});
