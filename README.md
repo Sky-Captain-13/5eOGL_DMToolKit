@@ -13,7 +13,7 @@ These four commands form the bulk of the Turn Order Tracker part of the Toolkit.
 
 !eot can be used by by any player or the GM to advance the turn order tracker one space. Players can only advance the turn order if the token at the top of the tracker is a token/character they control. Using !eot when it is not their turn will do nothing.
 
-!Track-effect will allow you to add and track spell effects and other short duration items like Rage using the command. You must have a name for the effect and a duration included or nothing will be added to the tracker. When the duration reaches zero, the effect will be removed from the turn order tracker and a simple message saying that the effect has ended will be sent to chat. You can optionally include a character name or other identifier as a third parameter. 
+!track-effect will allow you to add and track spell effects and other short duration items like Rage using the command. You must have a name for the effect and a duration included or nothing will be added to the tracker. When the duration reaches zero, the effect will be removed from the turn order tracker and a simple message saying that the effect has ended will be sent to chat. You can optionally include a character name or other identifier as a third parameter. 
 
 #### Example Macros
 !track-effect --Effect Name --Effect Duration [--Character Name]
@@ -83,7 +83,11 @@ Last, but not least is the user configuration section. Use these variables to cu
 * const CHECK_INSTANT_DEATH   = true;
   * If true, sets a red X on PC's that take enough damage to kill them instantly.
 * const CHECK_SYSTEM_SHOCK    = true;
-  * This doesn't really do anything yet, but will someday.
+  * If the target takes damage equal to greater than half their max hp, a notice is sent to chat to check for System Shock.
+* const NPC_STATS_PREFIX      = false;
+  * Adds ac. and pp. in front of the npc's armor class and passive perception values on their token.
+* const NPC_STATS_SUFFIX      = false;
+  * Adds .... AC and .... PP behind the npc's armor class and passive perception values on their token. The four dots .... with a space in front of and behind it, causes AC and PP to drop below the token bubble, making them easily readable.
 * const NPC_COLOR             = "#444444";
   * Sets the NPC color for turn order announcements.
 * const PC_COLOR              = "#073763";
