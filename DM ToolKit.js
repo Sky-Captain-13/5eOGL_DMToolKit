@@ -24,8 +24,8 @@ const DMToolKit = (() => {
     
     // VERSION INFORMATION
     const DMToolkit_Author = "Sky";
-    const DMToolkit_Version = "4.4.0";
-    const DMToolkit_LastUpdated = 1532499815;
+    const DMToolkit_Version = "4.4.1";
+    const DMToolkit_LastUpdated = 1532503055;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -197,7 +197,7 @@ const DMToolKit = (() => {
                 obj.set(`showplayers_bar${HIT_POINT_BAR}`, SHOW_NPC_HITPOINTS);
                 if (ARMOR_CLASS_BAR !== 0) {
                     obj.set(`bar${ARMOR_CLASS_BAR}_link`, "");
-                    obj.set(`bar${ARMOR_CLASS_BAR}_value`, ((PREFIX_NPC_STATS) ? "ac." : "") + getAttrByName(CharID, "npc_ac") + ((NPC_STATS_SUFFIX) ? " .... " + "AC" : ""));
+                    obj.set(`bar${ARMOR_CLASS_BAR}_value`, ((NPC_STATS_PREFIX) ? "ac." : "") + getAttrByName(CharID, "npc_ac") + ((NPC_STATS_SUFFIX) ? " .... " + "AC" : ""));
                     obj.set(`bar${ARMOR_CLASS_BAR}_max`, "");
                 }
                 if (HIT_POINT_BAR !== 0) {
@@ -207,7 +207,7 @@ const DMToolKit = (() => {
                 }
                 if (PASSIVE_PERCEPTION_BAR !== 0) {
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_link`, "");
-                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, ((PREFIX_NPC_STATS) ? "pp." : "") + parseInt(10 + Perception) + ((NPC_STATS_SUFFIX) ? " .... " + "PP" : ""));
+                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, ((NPC_STATS_PREFIX) ? "pp." : "") + parseInt(10 + Perception) + ((NPC_STATS_SUFFIX) ? " .... " + "PP" : ""));
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_max`, "");    
                 }
                 if (SPEED_BAR !== 0) {
