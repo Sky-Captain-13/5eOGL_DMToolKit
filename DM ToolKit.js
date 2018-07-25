@@ -9,6 +9,8 @@ const DMToolKit = (() => {
     const ANNOUNCE_NEW_TURN     = true;
     const CHECK_INSTANT_DEATH   = true;
     const CHECK_SYSTEM_SHOCK    = false;
+    const NPC_STATS_PREFIX      = false;
+    const NPC_STATS_SUFFIX      = true;
     const NPC_COLOR             = "#444444";
     const PC_COLOR              = "#073763";
     const PULL_GM_TO_TOKEN      = true;
@@ -21,9 +23,9 @@ const DMToolKit = (() => {
     const USE_PLAYER_COLOR      = true;
     
     // VERSION INFORMATION
-    const DMToolKit_Author = "Sky";
-    const DMToolKit_Version = "4.3.5";
-    const DMToolKit_LastUpdated = 1532138699;
+    const DMToolkit_Author = "Sky";
+    const DMToolkit_Version = "4.4.0";
+    const DMToolkit_LastUpdated = 1532499815;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -184,7 +186,7 @@ const DMToolKit = (() => {
                 let HitDie_Size = parseInt(HPF.split("d")[1]) || 0;
                 let HitDie_Mod = parseInt(HPF.split("+")[1]) || 0;
                 let Perception = (getAttrByName(CharID, "npc_perception") == "@{wisdom_mod}") ? getAttrByName(CharID, "wisdom_mod") : getAttrByName(CharID, "npc_perception");
-                let RandomHP = parseInt(Math.floor(Math.random() * ((HitDie_Count * HitDie_Size) - HitDie_Count + 1)) + HitDie_Count + HitDie_Mod);
+                let RandomHP = (RANDOM_NPC_HP) ? parseInt(Math.floor(Math.random() * ((HitDie_Count * HitDie_Size) - HitDie_Count + 1), 10) + HitDie_Count + HitDie_Mod) : getAttrByName(CharID, "npc_hp");
                 
                 // NPC Token Settings
                 obj.set(`showname`, SHOW_NPC_NAMES);
@@ -195,7 +197,7 @@ const DMToolKit = (() => {
                 obj.set(`showplayers_bar${HIT_POINT_BAR}`, SHOW_NPC_HITPOINTS);
                 if (ARMOR_CLASS_BAR !== 0) {
                     obj.set(`bar${ARMOR_CLASS_BAR}_link`, "");
-                    obj.set(`bar${ARMOR_CLASS_BAR}_value`, "ac." + getAttrByName(CharID, "npc_ac"));
+                    obj.set(`bar${ARMOR_CLASS_BAR}_value`, ((PREFIX_NPC_STATS) ? "ac." : "") + getAttrByName(CharID, "npc_ac") + ((NPC_STATS_SUFFIX) ? " .... " + "AC" : ""));
                     obj.set(`bar${ARMOR_CLASS_BAR}_max`, "");
                 }
                 if (HIT_POINT_BAR !== 0) {
@@ -205,7 +207,7 @@ const DMToolKit = (() => {
                 }
                 if (PASSIVE_PERCEPTION_BAR !== 0) {
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_link`, "");
-                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, "pp." + parseInt(10 + Perception));
+                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, ((PREFIX_NPC_STATS) ? "pp." : "") + parseInt(10 + Perception) + ((NPC_STATS_SUFFIX) ? " .... " + "PP" : ""));
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_max`, "");    
                 }
                 if (SPEED_BAR !== 0) {
@@ -450,6 +452,14 @@ const DMToolKit = (() => {
                 }
             });
         }
+        if (Command === "!list-equip") {
+            let Character = getObj("character", msg.content.split("--")[1]) || "Error";
+            if (Character === "Error" || Character === undefined) return;
+            let items = filterObjs( function(a) { return (a.get("characterid") === Character.id && a.get("name").startsWith("repeating_inventory") && a.get("name").endsWith("_itemname")); });
+            let item_list = `&{template:traits} {{name=${Character.get("name")}'s Equipment}} {{description=<span style='font-size: 12px;'>`;
+            _.each(items, function(b) { item_list += `${b.get("current")}<br>`; });
+            sendChat("GM", (item_list += "</span>}}"));
+        }
         // END COMMANDS
     }
     const handleTokenDrop = function(obj) {
@@ -475,7 +485,7 @@ const DMToolKit = (() => {
                 obj.set(`showplayers_bar${HIT_POINT_BAR}`, SHOW_NPC_HITPOINTS);
                 if (ARMOR_CLASS_BAR !== 0) {
                     obj.set(`bar${ARMOR_CLASS_BAR}_link`, "");
-                    obj.set(`bar${ARMOR_CLASS_BAR}_value`, "ac." + getAttrByName(CharID, "npc_ac"));
+                    obj.set(`bar${ARMOR_CLASS_BAR}_value`, ((NPC_STATS_PREFIX) ? "ac." : "") + getAttrByName(CharID, "npc_ac") + ((NPC_STATS_SUFFIX) ? " .... " + "AC" : ""));
                     obj.set(`bar${ARMOR_CLASS_BAR}_max`, "");
                 }
                 if (HIT_POINT_BAR !== 0) {
@@ -485,7 +495,7 @@ const DMToolKit = (() => {
                 }
                 if (PASSIVE_PERCEPTION_BAR !== 0) {
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_link`, "");
-                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, "pp." + parseInt(10 + Perception));
+                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, ((NPC_STATS_PREFIX) ? "pp." : "") + parseInt(10 + Perception) + ((NPC_STATS_SUFFIX) ? " .... " + "PP" : ""));
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_max`, "");    
                 }
                 if (SPEED_BAR !== 0) {
@@ -538,7 +548,7 @@ const DMToolKit = (() => {
         }
         
         if (CHECK_SYSTEM_SHOCK && HP_Current > 0 && HP_Change > Math.floor(HP_Max/2)) {
-            log ("System shock: " + TokenName);
+            sendChat("DM Toolkit", `&{template:traits} {{name=Massive Damage}} {{description=<b>${TokenName}</b> has taken massive damage! Make a DC 15 Constitution saving throw. On a failure, roll System Shock (pg 273 DMG).}}`);
         }
     }
     const handleTurnOrderChange = function (obj, prev) {
@@ -573,7 +583,7 @@ const DMToolKit = (() => {
         on(`change:token:bar${HIT_POINT_BAR}_value`, handleTokenHPChange);
         on(`chat:message`, handleInput);
         on(`destroy:graphic`, handleDeletedToken);
-        log("-=> DMToolKit v" + DMToolKit_Version + " <=- [" + (new Date(DMToolKit_LastUpdated * 1000)) + "]");
+        log("-=> DMToolkit v" + DMToolkit_Version + " <=- [" + (new Date(DMToolkit_LastUpdated * 1000)) + "]");
         //log(Date.now().toString().substr(0, 10));
     }
     
