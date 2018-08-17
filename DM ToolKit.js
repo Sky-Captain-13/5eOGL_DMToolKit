@@ -1,8 +1,8 @@
 const DMToolKit = (() => {
     // BAR CONFIGURATION -- Set to 0 to disable. Cannot use same bar # twice.
-    const ARMOR_CLASS_BAR        = 2;
-    const HIT_POINT_BAR          = 1;
-    const PASSIVE_PERCEPTION_BAR = 0;
+    const ARMOR_CLASS_BAR        = 1;
+    const HIT_POINT_BAR          = 3;
+    const PASSIVE_PERCEPTION_BAR = 2;
     const SPEED_BAR              = 0;
     
     // USER CONFIGURATION -- Set to true/false or hex color code.
@@ -24,8 +24,8 @@ const DMToolKit = (() => {
     
     // VERSION INFORMATION
     const DMToolkit_Author = "Sky";
-    const DMToolkit_Version = "4.4.1";
-    const DMToolkit_LastUpdated = 1532503055;
+    const DMToolkit_Version = "4.4.2";
+    const DMToolkit_LastUpdated = 1534548740;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -364,11 +364,11 @@ const DMToolKit = (() => {
         }
         if (Command === "!track-effect") {
             let turn_order = (!Campaign().get("turnorder")) ? [] : JSON.parse(Campaign().get("turnorder"));
-            let Effect = msg.content.split("--")[1].trim() || "Error";
+            let Effect = msg.content.split("--")[1] || "Error";
             let Duration = msg.content.split("--")[2] || 999;
             let Owner = msg.content.split("--")[3] || "";
             if (Effect === "Error" || Duration === 999) return;
-            turn_order.push({id: "-1", pr: Duration, custom: Effect + ((Owner !== "") ? ` (${Owner})` : ""), formula: "-1"});
+            turn_order.push({id: "-1", pr: Duration, custom: Effect.trim() + ((Owner !== "") ? ` (${Owner})` : ""), formula: "-1"});
             Campaign().set("initiativepage", true);
             Campaign().set("turnorder", JSON.stringify(turn_order));
         }
