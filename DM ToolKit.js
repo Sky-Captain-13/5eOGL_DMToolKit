@@ -1,8 +1,8 @@
 const DMToolKit = (() => {
     // BAR CONFIGURATION -- Set to 0 to disable. Cannot use same bar # twice.
-    const ARMOR_CLASS_BAR        = 1;
-    const HIT_POINT_BAR          = 3;
-    const PASSIVE_PERCEPTION_BAR = 2;
+    const ARMOR_CLASS_BAR        = 2;
+    const HIT_POINT_BAR          = 1;
+    const PASSIVE_PERCEPTION_BAR = 3;
     const SPEED_BAR              = 0;
     
     // USER CONFIGURATION -- Set to true/false or hex color code.
@@ -15,6 +15,7 @@ const DMToolKit = (() => {
     const PC_COLOR              = "#073763";
     const PULL_GM_TO_TOKEN      = true;
     const RANDOM_NPC_HP         = true;
+    const SET_DEFAULT_TOKEN     = true;
     const SHOW_GREEN_DOT        = true;
     const SHOW_HALF_HITPOINTS   = true;
     const SHOW_NPC_HITPOINTS    = true;
@@ -25,7 +26,7 @@ const DMToolKit = (() => {
     // VERSION INFORMATION
     const DMToolkit_Author = "Sky";
     const DMToolkit_Version = "4.4.2";
-    const DMToolkit_LastUpdated = 1534548740;
+    const DMToolkit_LastUpdated = 1536149500;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -220,6 +221,7 @@ const DMToolKit = (() => {
                 obj.set(`light_otherplayers`, false);
                 obj.set(`light_hassight`, false);
                 obj.set("status_dead", false);
+                if (SET_DEFAULT_TOKEN && CharID !== "") setDefaultTokenForCharacter(getObj("character", CharID), obj);
             });
         }
         if (Command === "!fow" && playerIsGM(msg.playerid)) {
@@ -364,11 +366,11 @@ const DMToolKit = (() => {
         }
         if (Command === "!track-effect") {
             let turn_order = (!Campaign().get("turnorder")) ? [] : JSON.parse(Campaign().get("turnorder"));
-            let Effect = msg.content.split("--")[1] || "Error";
+            let Effect = msg.content.split("--")[1].trim() || "Error";
             let Duration = msg.content.split("--")[2] || 999;
             let Owner = msg.content.split("--")[3] || "";
             if (Effect === "Error" || Duration === 999) return;
-            turn_order.push({id: "-1", pr: Duration, custom: Effect.trim() + ((Owner !== "") ? ` (${Owner})` : ""), formula: "-1"});
+            turn_order.push({id: "-1", pr: Duration, custom: Effect + ((Owner !== "") ? ` (${Owner})` : ""), formula: "-1"});
             Campaign().set("initiativepage", true);
             Campaign().set("turnorder", JSON.stringify(turn_order));
         }
@@ -464,6 +466,7 @@ const DMToolKit = (() => {
     }
     const handleTokenDrop = function(obj) {
         setTimeout(function() {
+            return;
             if (obj.get("type") === "graphic" && obj.get("subtype") === "token" && obj.get("represents") !== "" && obj.get("layer") !== "map") {
                 if (Boolean(Number(getAttrByName(obj.get("represents"), "npc"))) === false) return;
                 //if (obj.get("bar1_link") !== "" || obj.get("bar2_link") !== "" || obj.get("bar3_link") !== "") return;
@@ -508,6 +511,7 @@ const DMToolKit = (() => {
                 obj.set(`light_otherplayers`, false);
                 obj.set(`light_hassight`, false);
 				obj.set("status_dead", false);
+				if (SET_DEFAULT_TOKEN && CharID !== "") setDefaultTokenForCharacter(getObj("character", CharID), obj);
 			}
 		}, 500);
     }
