@@ -466,7 +466,6 @@ const DMToolKit = (() => {
     }
     const handleTokenDrop = function(obj) {
         setTimeout(function() {
-            return;
             if (obj.get("type") === "graphic" && obj.get("subtype") === "token" && obj.get("represents") !== "" && obj.get("layer") !== "map") {
                 if (Boolean(Number(getAttrByName(obj.get("represents"), "npc"))) === false) return;
                 //if (obj.get("bar1_link") !== "" || obj.get("bar2_link") !== "" || obj.get("bar3_link") !== "") return;
