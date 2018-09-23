@@ -1,8 +1,8 @@
 const DMToolKit = (() => {
     // BAR CONFIGURATION -- Set to 0 to disable. Cannot use same bar # twice.
-    const ARMOR_CLASS_BAR        = 2;
-    const HIT_POINT_BAR          = 1;
-    const PASSIVE_PERCEPTION_BAR = 3;
+    const ARMOR_CLASS_BAR        = 1;
+    const HIT_POINT_BAR          = 3;
+    const PASSIVE_PERCEPTION_BAR = 2;
     const SPEED_BAR              = 0;
     
     // USER CONFIGURATION -- Set to true/false or hex color code.
@@ -15,7 +15,6 @@ const DMToolKit = (() => {
     const PC_COLOR              = "#073763";
     const PULL_GM_TO_TOKEN      = true;
     const RANDOM_NPC_HP         = true;
-    const SET_DEFAULT_TOKEN     = true;
     const SHOW_GREEN_DOT        = true;
     const SHOW_HALF_HITPOINTS   = true;
     const SHOW_NPC_HITPOINTS    = true;
@@ -25,8 +24,8 @@ const DMToolKit = (() => {
     
     // VERSION INFORMATION
     const DMToolkit_Author = "Sky";
-    const DMToolkit_Version = "4.4.2";
-    const DMToolkit_LastUpdated = 1536149500;
+    const DMToolkit_Version = "4.4.3";
+    const DMToolkit_LastUpdated = 1537722645;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -56,6 +55,7 @@ const DMToolKit = (() => {
             let InnerStyle = `line-height: 20px; width: 100%; margin: 0px; padding: 0px 0px 2px 7px; clear: both; overflow: hidden; font-family: Candal; font-weight: lighter; font-size: 13px; color: #FFF; background-color: ${BGColor}; background-image: linear-gradient(rgba(255, 255, 255, .4), rgba(255, 255, 255, 0)); border: 1px solid #000; border-radius: 4px; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000;`;
             sendChat("", `/desc <div style='${OuterStyle}'><div style='${InnerStyle}'>${Message}</div></div>`);
             if ("undefined" !== typeof handleTokenHPChange) handleTokenHPChange(Token, Previous);
+            if ("undefined" !== typeof HealthColors && HealthColors.Update) HealthColors.Update(Token, Previous);
         });
 	}
 	const announceNewTurn = function(current, previous) {
@@ -221,23 +221,6 @@ const DMToolKit = (() => {
                 obj.set(`light_otherplayers`, false);
                 obj.set(`light_hassight`, false);
                 obj.set("status_dead", false);
-                if (SET_DEFAULT_TOKEN && CharID !== "") setDefaultTokenForCharacter(getObj("character", CharID), obj);
-            });
-        }
-        if (Command === "!fow" && playerIsGM(msg.playerid)) {
-            let Option = msg.content.split(" ")[1];
-            let Player = getObj("player", msg.playerid);
-            let Page = getObj("page", Player.get("lastpage"));
-            let FOWTokens = findObjs({
-                pageid: Page.id,
-                type: "graphic",
-                name: "HEX_FOW"
-            });
-            _.each(FOWTokens, function(obj) {
-                if (Option !== undefined) {
-                    if (Option == "front") toFront(obj);
-                    else toBack(obj);
-                }
             });
         }
         if (Command === "!group-check" && playerIsGM(msg.playerid) && msg.selected) {
@@ -322,7 +305,7 @@ const DMToolKit = (() => {
                 "_type": "graphic"
             }];
             _.each(msg.selected, function(a) {
-                var Token = getObj("graphic", a["_id"]);
+                let Token = getObj("graphic", a["_id"]);
                 if (Token !== undefined) {
                     Token.set("statusmarkers", "");
                     Token.set(`bar${HIT_POINT_BAR}_value`, Token.get(`bar${HIT_POINT_BAR}_max`));
@@ -366,11 +349,11 @@ const DMToolKit = (() => {
         }
         if (Command === "!track-effect") {
             let turn_order = (!Campaign().get("turnorder")) ? [] : JSON.parse(Campaign().get("turnorder"));
-            let Effect = msg.content.split("--")[1].trim() || "Error";
+            let Effect = msg.content.split("--")[1] || "Error";
             let Duration = msg.content.split("--")[2] || 999;
             let Owner = msg.content.split("--")[3] || "";
             if (Effect === "Error" || Duration === 999) return;
-            turn_order.push({id: "-1", pr: Duration, custom: Effect + ((Owner !== "") ? ` (${Owner})` : ""), formula: "-1"});
+            turn_order.push({id: "-1", pr: Duration, custom: Effect.trim() + ((Owner !== "") ? ` (${Owner})` : ""), formula: "-1"});
             Campaign().set("initiativepage", true);
             Campaign().set("turnorder", JSON.stringify(turn_order));
         }
@@ -420,6 +403,22 @@ const DMToolKit = (() => {
                     } else if (Option.toLowerCase() === "everburning_torch") {
                         Token.set("light_radius", 40);
                         Token.set("light_dimradius", 20);
+                    } else if (Option.toLowerCase() === "fog_light") {
+                        Token.set("light_radius", 60);
+                        Token.set("light_dimradius", -1);
+                        Token.set("light_otherplayers", false);
+                    } else if (Option.toLowerCase() === "fog_moderate") {
+                        Token.set("light_radius", 40);
+                        Token.set("light_dimradius", -1);
+                        Token.set("light_otherplayers", false);
+                    } else if (Option.toLowerCase() === "fog_dense") {
+                        Token.set("light_radius", 20);
+                        Token.set("light_dimradius", -1);
+                        Token.set("light_otherplayers", false);
+                    } else if (Option.toLowerCase() === "fog_solid") {
+                        Token.set("light_radius", 10);
+                        Token.set("light_dimradius", -1);
+                        Token.set("light_otherplayers", false);
                     } else if (Option.toLowerCase() === "lamp") {
                         Token.set("light_radius", 30);
                         Token.set("light_dimradius", 15);
@@ -442,10 +441,6 @@ const DMToolKit = (() => {
                     } else if (Option.toLowerCase() === "sunrod") {
                         Token.set("light_radius", 90);
                         Token.set("light_dimradius", 30);
-                    } else if (Option.toLowerCase() === "hexmap") {
-                        Token.set("light_radius", 0.1);
-                        Token.set("light_dimradius", "");
-                        Token.set("showname", false);
                     } else {
                         Token.set("light_radius", 5);
                         Token.set("light_dimradius", -1);
@@ -453,14 +448,6 @@ const DMToolKit = (() => {
                     }
                 }
             });
-        }
-        if (Command === "!list-equip") {
-            let Character = getObj("character", msg.content.split("--")[1]) || "Error";
-            if (Character === "Error" || Character === undefined) return;
-            let items = filterObjs( function(a) { return (a.get("characterid") === Character.id && a.get("name").startsWith("repeating_inventory") && a.get("name").endsWith("_itemname")); });
-            let item_list = `&{template:traits} {{name=${Character.get("name")}'s Equipment}} {{description=<span style='font-size: 12px;'>`;
-            _.each(items, function(b) { item_list += `${b.get("current")}<br>`; });
-            sendChat("GM", (item_list += "</span>}}"));
         }
         // END COMMANDS
     }
@@ -477,6 +464,7 @@ const DMToolKit = (() => {
 				let HitDie_Mod = parseInt(HPF.split("+")[1], 10) || 0;
 				let RandomHP = (RANDOM_NPC_HP) ? parseInt(Math.floor(Math.random() * ((HitDie_Count * HitDie_Size) - HitDie_Count + 1), 10) + HitDie_Count + HitDie_Mod) : getAttrByName(CharID, "npc_hp");
 				let Perception = (getAttrByName(CharID, "npc_perception") == "@{wisdom_mod}") ? getAttrByName(CharID, "wisdom_mod") : getAttrByName(CharID, "npc_perception");
+				log (Perception);
 				
 				// NPC Token Settings
                 obj.set(`showname`, SHOW_NPC_NAMES);
@@ -497,7 +485,7 @@ const DMToolKit = (() => {
                 }
                 if (PASSIVE_PERCEPTION_BAR !== 0) {
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_link`, "");
-                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, ((NPC_STATS_PREFIX) ? "pp." : "") + parseInt(10 + Perception) + ((NPC_STATS_SUFFIX) ? " .... " + "PP" : ""));
+                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, ((NPC_STATS_PREFIX) ? "pp." : "") + (10 + parseInt(Perception)) + ((NPC_STATS_SUFFIX) ? " .... " + "PP" : ""));
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_max`, "");    
                 }
                 if (SPEED_BAR !== 0) {
@@ -510,7 +498,6 @@ const DMToolKit = (() => {
                 obj.set(`light_otherplayers`, false);
                 obj.set(`light_hassight`, false);
 				obj.set("status_dead", false);
-				if (SET_DEFAULT_TOKEN && CharID !== "") setDefaultTokenForCharacter(getObj("character", CharID), obj);
 			}
 		}, 500);
     }
@@ -576,10 +563,6 @@ const DMToolKit = (() => {
         }
         if (current[0].id != -1) toFront(getObj("graphic", current[0].id));
     }
-    const sortObject = function(obj) {
-        return Object.keys(obj).sort().reduce((r, k) => (r[k] = obj[k], r), {});
-    }
-    
     const registerEventHandlers = function() {
         on(`add:graphic`, handleTokenDrop);
         on(`change:campaign:turnorder`, handleTurnOrderChange);
@@ -587,8 +570,11 @@ const DMToolKit = (() => {
         on(`chat:message`, handleInput);
         on(`destroy:graphic`, handleDeletedToken);
         log("-=> DMToolkit v" + DMToolkit_Version + " <=- [" + (new Date(DMToolkit_LastUpdated * 1000)) + "]");
-        //log(Date.now().toString().substr(0, 10));
+        // log(Date.now().toString().substr(0, 10));
     }
-    
+    const sortObject = function(obj) {
+        return Object.keys(obj).sort().reduce((r, k) => (r[k] = obj[k], r), {});
+    }
+
     on("ready", function() { registerEventHandlers(); });
 })();
