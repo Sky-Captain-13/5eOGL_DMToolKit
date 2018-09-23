@@ -24,8 +24,8 @@ const DMToolKit = (() => {
     
     // VERSION INFORMATION
     const DMToolkit_Author = "Sky";
-    const DMToolkit_Version = "4.4.3";
-    const DMToolkit_LastUpdated = 1537722645;
+    const DMToolkit_Version = "4.4.4";
+    const DMToolkit_LastUpdated = 1537724736;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -221,6 +221,7 @@ const DMToolKit = (() => {
                 obj.set(`light_otherplayers`, false);
                 obj.set(`light_hassight`, false);
                 obj.set("status_dead", false);
+                setTimeout(function() { setDefaultTokenForCharacter(getObj("character", CharID), obj); }, 500);
             });
         }
         if (Command === "!group-check" && playerIsGM(msg.playerid) && msg.selected) {
@@ -411,7 +412,7 @@ const DMToolKit = (() => {
                         Token.set("light_radius", 40);
                         Token.set("light_dimradius", -1);
                         Token.set("light_otherplayers", false);
-                    } else if (Option.toLowerCase() === "fog_dense") {
+                    } else if (Option.toLowerCase() === "fog_heavy") {
                         Token.set("light_radius", 20);
                         Token.set("light_dimradius", -1);
                         Token.set("light_otherplayers", false);
@@ -455,7 +456,6 @@ const DMToolKit = (() => {
         setTimeout(function() {
             if (obj.get("type") === "graphic" && obj.get("subtype") === "token" && obj.get("represents") !== "" && obj.get("layer") !== "map") {
                 if (Boolean(Number(getAttrByName(obj.get("represents"), "npc"))) === false) return;
-                //if (obj.get("bar1_link") !== "" || obj.get("bar2_link") !== "" || obj.get("bar3_link") !== "") return;
                 if (obj.get("bar1_link") !== "" || obj.get("bar3_link") !== "") return;
                 let CharID = obj.get("represents");
 				let HPF = getAttrByName(CharID, "npc_hpformula") || "0d0+0";
@@ -464,7 +464,6 @@ const DMToolKit = (() => {
 				let HitDie_Mod = parseInt(HPF.split("+")[1], 10) || 0;
 				let RandomHP = (RANDOM_NPC_HP) ? parseInt(Math.floor(Math.random() * ((HitDie_Count * HitDie_Size) - HitDie_Count + 1), 10) + HitDie_Count + HitDie_Mod) : getAttrByName(CharID, "npc_hp");
 				let Perception = (getAttrByName(CharID, "npc_perception") == "@{wisdom_mod}") ? getAttrByName(CharID, "wisdom_mod") : getAttrByName(CharID, "npc_perception");
-				log (Perception);
 				
 				// NPC Token Settings
                 obj.set(`showname`, SHOW_NPC_NAMES);
@@ -498,6 +497,7 @@ const DMToolKit = (() => {
                 obj.set(`light_otherplayers`, false);
                 obj.set(`light_hassight`, false);
 				obj.set("status_dead", false);
+				setTimeout(function() { setDefaultTokenForCharacter(getObj("character", CharID), obj); }, 500);
 			}
 		}, 500);
     }
