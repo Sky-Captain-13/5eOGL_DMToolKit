@@ -1,31 +1,30 @@
 const DMToolKit = (() => {
     // BAR CONFIGURATION -- Set to 0 to disable. Cannot use same bar # twice.
-    const ARMOR_CLASS_BAR = 1;
-    const HIT_POINT_BAR = 3;
+    const ARMOR_CLASS_BAR        = 1;
+    const HIT_POINT_BAR          = 3;
     const PASSIVE_PERCEPTION_BAR = 2;
-    const SPEED_BAR = 0;
-
+    const SPEED_BAR              = 0;
+    
     // USER CONFIGURATION -- Set to true/false or hex color code.
-    const ANNOUNCE_NEW_TURN = true;
-    const CHECK_INSTANT_DEATH = true;
-    const CHECK_SYSTEM_SHOCK = false;
-    const NPC_STATS_PREFIX = false;
-    const NPC_STATS_SUFFIX = false;
-    const NPC_COLOR = "#444444";
-    const PC_COLOR = "#073763";
-    const PULL_GM_TO_TOKEN = true;
-    const RANDOM_NPC_HP = true;
-    const SHOW_GREEN_DOT = true;
-    const SHOW_HALF_HITPOINTS = true;
-    const SHOW_NPC_HITPOINTS = false;
-    const SHOW_NPC_NAMES = true;
-    const SHOW_NPC_STATBLOCK = true;
-    const USE_PLAYER_COLOR = true;
-
+    const ANNOUNCE_NEW_TURN     = true;
+    const CHECK_INSTANT_DEATH   = true;
+    const CHECK_SYSTEM_SHOCK    = false;
+    const NPC_STATS_PREFIX      = false;
+    const NPC_STATS_SUFFIX      = false;
+    const NPC_COLOR             = "#444444";
+    const PC_COLOR              = "#073763";
+    const PULL_GM_TO_TOKEN      = true;
+    const RANDOM_NPC_HP         = true;
+    const SHOW_GREEN_DOT        = true;
+    const SHOW_HALF_HITPOINTS   = true;
+    const SHOW_NPC_HITPOINTS    = false;
+    const SHOW_NPC_NAMES        = true;
+    const SHOW_NPC_STATBLOCK    = true;
+    const USE_PLAYER_COLOR      = true;
+    
     // FLOATING DAMAGE CONFIGURATION
-    // Adapted original script by Quinn Gordon
-    // * Roll20: https://app.roll20.net/users/42042/prof
-    // * Github: https://github.com/ProfessorProf
+    const barValueKey = `bar${HIT_POINT_BAR}_value`;
+    const barMaxKey = `bar${HIT_POINT_BAR}_max`;
     const config = {
         enabled: true,
         font: 'Contrail One',
@@ -35,23 +34,21 @@ const DMToolKit = (() => {
         tokenSizeScaling: true,
         majorDamageScaling: true
     };
-    const barValueKey = `bar${HIT_POINT_BAR}_value`;
-    const barMaxKey = `bar${HIT_POINT_BAR}_max`;
-
+    
     // VERSION INFORMATION
     const DMToolkit_Author = "Sky";
-    const DMToolkit_Version = "4.5.0"; // Added floating damage numbers and fixed !icon issues
-    const DMToolkit_LastUpdated = 1555829476;
-
-    // FUNCTIONS
-    const adjustTokenHP = function(Command, Amount, Token) {
+    const DMToolkit_Version = "4.5.1"; // Fixed floating numbers copy & paste issue
+    const DMToolkit_LastUpdated = 1556062615;
+    
+	// FUNCTIONS
+	const adjustTokenHP = function(Command, Amount, Token) {
         // VARIABLES
         let HP_Current = parseInt(Token.get(`bar${HIT_POINT_BAR}_value`));
         let HP_Max = parseInt(Token.get(`bar${HIT_POINT_BAR}_max`));
         let Previous = JSON.parse(JSON.stringify(Token));
-
+        
         if (isNaN(HP_Current) || isNaN(HP_Max)) return;
-        sendChat("", "/r " + Amount, function(roll) {
+        sendChat("", "/r " + Amount, function (roll) {
             let Result = Math.abs(parseInt(JSON.parse(roll[0].content).total));
             let Character = (Token.get("represents") !== "") ? getObj("character", Token.get("represents")) : "";
             let isNPC = (Character !== "") ? Boolean(Number(getAttrByName(Character.id, "npc"))) : true;
@@ -74,8 +71,8 @@ const DMToolKit = (() => {
             if ("undefined" !== typeof HealthColors && HealthColors.Update) HealthColors.Update(Token, Previous);
             if ("undefined" !== typeof ApplyDamage) onTokenChange(Token, Previous);
         });
-    }
-    const announceNewTurn = function(current, previous) {
+	}
+	const announceNewTurn = function(current, previous) {
         if (_.isEmpty(current) || _.isEmpty(previous)) return;
         if (current[0].id !== "-1" && current[0].id !== previous[0].id && getObj("graphic", current[0].id).get("layer") !== "gmlayer" && current[0].id !== previous[0].id) {
             let Token = getObj("graphic", current[0].id);
@@ -84,7 +81,7 @@ const DMToolKit = (() => {
             let Player = (ControlledBy !== "" && ControlledBy.startsWith("-")) ? Character.get("controlledby").split(",")[0] : (ControlledBy !== "" && ControlledBy.startsWith("all,")) ? Character.get("controlledby").split(",")[1] : "";
             let isNPC = (Character !== "" && Character !== undefined) ? Boolean(Number(getAttrByName(Character.id, "npc"))) : true;
             let Message = ((isNPC && SHOW_NPC_NAMES) || isNPC === false) ? (Token.get("name").startsWith("Round")) ? Token.get("name") + " " + current[0].pr : Token.get("name") : "NPC";
-            let BGColor = (Token.get("name") === "Round") ? "#000000" : (isNPC) ? NPC_COLOR : (USE_PLAYER_COLOR && Player !== "") ? getObj("player", Player).get("color") : PC_COLOR;
+            let BGColor = (Token.get("name") === "Round") ? "#000000": (isNPC) ? NPC_COLOR : (USE_PLAYER_COLOR && Player !== "") ? getObj("player", Player).get("color") : PC_COLOR;
             let TXColor = (getBrightness(BGColor) < (255 / 2)) ? "#FFF" : "#000";
             let TXShadow = (TXColor == "#000") ? "#FFF" : "#000";
             let OuterStyle = `line-height: 40px; max-height: 40px; width: 100%; margin: 11px 0px 5px -7px; padding: 0px`;
@@ -94,36 +91,28 @@ const DMToolKit = (() => {
             if (SHOW_NPC_STATBLOCK && isNPC && Character !== "" && Character !== undefined) {
                 let action_style = "color: #404040; background-color: #DCDCDC; border: 1px solid #404040; border-radius: 3px; margin: 1px; padding: 0px 5px; text-decoration: none;"
                 let npc_statblock = `/w GM &{template:traits} {{description=<span style="font-size: 12px;">**Speed:** ${getAttrByName(Character.id, "npc_speed")}<br>**Senses:** ${getAttrByName(Character.id, "npc_senses").replace("blindsight", "Blindsight").replace("darkvision", "Darkvision").replace("passive", "Passive").replace(" , ", "")}<br>**Actions:** `;
-                let actions_list = filterObjs(function(a) {
-                    return (a.get("characterid") === Character.id && a.get("name").startsWith("repeating_npcaction") && a.get("name").endsWith("_name"));
-                });
+                let actions_list = filterObjs( function(a) { return (a.get("characterid") === Character.id && a.get("name").startsWith("repeating_npcaction") && a.get("name").endsWith("_name")); });
                 let action_list = [];
                 let legend_list = [];
-                _.each(actions_list, function(b) {
-                    (b.get("name").startsWith("repeating_npcaction_")) ? action_list.push(b): legend_list.push(b);
-                });
-                _.each(action_list, function(c) {
-                    npc_statblock += `<a href='~${Character.get("name")}|${c.get("name").split("_name")[0]}_npc_action' style='${action_style}'>${c.get("current")}</a>`;
-                });
+                _.each(actions_list, function(b) { (b.get("name").startsWith("repeating_npcaction_")) ? action_list.push(b) : legend_list.push(b); });
+                _.each(action_list, function(c) { npc_statblock += `<a href='~${Character.get("name")}|${c.get("name").split("_name")[0]}_npc_action' style='${action_style}'>${c.get("current")}</a>`; });
                 if (_.isEmpty(legend_list) === false) {
                     npc_statblock += "<br>**Legendary Actions:**<br>";
-                    _.each(legend_list, function(d) {
-                        npc_statblock += `<a href='~${Character.get("name")}|${d.get("name").split("_name")[0]}_npc_action' style='${action_style}'>${d.get("current")}</a>`;
-                    });
+                    _.each(legend_list, function(d) { npc_statblock += `<a href='~${Character.get("name")}|${d.get("name").split("_name")[0]}_npc_action' style='${action_style}'>${d.get("current")}</a>`; });
                 }
                 sendChat("DM ToolKit", (npc_statblock += "</span>}}"));
             }
         }
-    }
-    const damageNumber = function(token, oldHp, newHp, oldHpMax, newHpMax) {
-        // NaN values or max HP changed, don't show a number
-        if (oldHp != oldHp || newHp != newHp || (oldHpMax == oldHpMax && newHpMax == newHpMax && oldHpMax != newHpMax) || oldHp - newHp == oldHpMax - newHpMax) return;
-
+	}
+	const damageNumber = function(token, oldHp, newHp, oldHpMax, newHpMax) {
+	    // NaN values or max HP changed, don't show a number
+        if(oldHp != oldHp || newHp != newHp || (oldHpMax == oldHpMax && newHpMax == newHpMax && oldHpMax != newHpMax) || oldHp - newHp == oldHpMax - newHpMax) return;
+        
         let hpChange = newHp - oldHp;
         let width = token.get('width');
         let height = token.get('height');
         let fontSize = scaleFont(height, width, hpChange, newHpMax);
-
+        
         // Create number at random location at the top of the token
         let number = createObj('text', {
             _pageid: token.get('_pageid'),
@@ -135,45 +124,43 @@ const DMToolKit = (() => {
             font_size: fontSize,
             color: hpChange > 0 ? config.healingColor : config.damageColor
         });
-
+        
         updateDamageNumber(number, number.get('top') - 50, 20);
     }
-    const enforceDefaults = function(attr) {
-        // log (attr);
-        if (attr.get("name") == "rtype") attr.set("current", "{{always=1}} {{r2=[[@{d20}");
-        if (attr.get("name") == "init_tiebreaker") attr.set("current", "0");
-    }
-    const getBrightness = function(hex) {
+	const enforceDefaults = function(attr) {
+	    // log (attr);
+	    if (attr.get("name") == "rtype") attr.set("current", "{{always=1}} {{r2=[[@{d20}");
+	    if (attr.get("name") == "init_tiebreaker") attr.set("current", "0");
+	}
+	const getBrightness = function(hex) {
         hex = hex.replace('#', '');
         let c_r = getHex2Dec(hex.substr(0, 2));
         let c_g = getHex2Dec(hex.substr(2, 2));
         let c_b = getHex2Dec(hex.substr(4, 2));
         return ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000;
-    }
+	}
     const getHex2Dec = function(hex_string) {
         hex_string = (hex_string + '').replace(/[^a-f0-9]/gi, '');
         return parseInt(hex_string, 16);
     }
-    const handleDeletedToken = function(obj) {
+    const handleDeletedToken = function (obj) {
         if (JSON.parse(Campaign().get("turnorder")).length > 0) {
             var Previous = JSON.parse(JSON.stringify(Campaign()));
-            var TurnOrder = _.reject(JSON.parse(Campaign().get("turnorder")), function(a) {
-                return a.id === obj.get("id");
-            });
+            var TurnOrder = _.reject(JSON.parse(Campaign().get("turnorder")), function(a) { return a.id === obj.get("id"); });
             Campaign().set("turnorder", JSON.stringify(TurnOrder));
             handleTurnOrderChange(Campaign(), Previous);
         }
-    }
+	}
     const handleInput = function(msg_orig) {
-        if (msg_orig.type !== "api") return;
+        if (msg_orig.type !== "api" ) return;
         let msg = _.clone(msg_orig);
         let Command = msg.content.split(" ")[0]
-
+        
         // API COMMANDS
-        // Commands with options in brackets like this [on|off] are optional and
-        // the api command will usually  toggle between the two options. If the
-        // command has parameters listed without brackets like this !dl on|off,
-        // the command requires that one of the parameters be present.
+         // Commands with options in brackets like this [on|off] are optional and
+         // the api command will usually  toggle between the two options. If the
+         // command has parameters listed without brackets like this !dl on|off,
+         // the command requires that one of the parameters be present.
         if (Command === "!clear-init" && playerIsGM(msg.playerid)) {
             // This command clears the turn order and removes the green dot
             // from the token at the top of the turn order.
@@ -184,12 +171,11 @@ const DMToolKit = (() => {
             Campaign().set("turnorder", "[]");
             Campaign().set("initiativepage", false);
         }
-        if (Command === "!dl" && playerIsGM(msg.playerid)) {
+        if (Command === "!dl" && playerIsGM(msg.playerid)) { 
             // Toggles dynamic lighting on the current map.
             // USAGE: !dl [on|off]
             let Player = getObj("player", msg.playerid);
-            let Page = getObj("page", Player.get("lastpage"));
-            log(Page);
+            let Page = getObj("page", Player.get("lastpage")); log (Page);
             let Option = msg.content.split(" ")[1];
             if (Option !== undefined) {
                 if (Option.toLowerCase() == "on") Page.set("showlighting", true);
@@ -216,12 +202,7 @@ const DMToolKit = (() => {
                 }
             }
             if (current.id == -1 && current.custom !== undefined && parseInt(current.pr, 10) === 0) sendChat("", `/desc ${current.custom} has ended.`);
-            else turn_order.push({
-                id: current.id,
-                pr: current.pr,
-                custom: current.custom,
-                formula: current.formula
-            });
+            else turn_order.push({id: current.id, pr: current.pr, custom: current.custom, formula: current.formula});
             Campaign().set("turnorder", JSON.stringify(turn_order));
             if (current.id != -1 && SHOW_GREEN_DOT) getObj("graphic", current.id).set("status_green", false);
             if (next.id != -1 && SHOW_GREEN_DOT) getObj("graphic", next.id).set("status_green", true);
@@ -249,13 +230,13 @@ const DMToolKit = (() => {
                 let HitDie_Mod = parseInt(HPF.split("+")[1]) || 0;
                 let Perception = (getAttrByName(CharID, "npc_perception") == "@{wisdom_mod}") ? getAttrByName(CharID, "wisdom_mod") : getAttrByName(CharID, "npc_perception");
                 let RandomHP = (RANDOM_NPC_HP) ? parseInt(Math.floor(Math.random() * ((HitDie_Count * HitDie_Size) - HitDie_Count + 1), 10) + HitDie_Count + HitDie_Mod) : getAttrByName(CharID, "npc_hp");
-
+                
                 // NPC Token Settings
                 obj.set(`showname`, SHOW_NPC_NAMES);
                 obj.set(`showplayers_name`, SHOW_NPC_NAMES);
                 obj.set("showplayers_bar1", false);
-                obj.set("showplayers_bar2", false);
-                obj.set("showplayers_bar3", false);
+				obj.set("showplayers_bar2", false);
+				obj.set("showplayers_bar3", false);
                 obj.set(`showplayers_bar${HIT_POINT_BAR}`, SHOW_NPC_HITPOINTS);
                 if (ARMOR_CLASS_BAR !== 0) {
                     obj.set(`bar${ARMOR_CLASS_BAR}_link`, "");
@@ -270,7 +251,7 @@ const DMToolKit = (() => {
                 if (PASSIVE_PERCEPTION_BAR !== 0) {
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_link`, "");
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, ((NPC_STATS_PREFIX) ? "pp." : "") + parseInt(10 + Perception) + ((NPC_STATS_SUFFIX) ? " .... " + "PP" : ""));
-                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_max`, "");
+                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_max`, "");    
                 }
                 if (SPEED_BAR !== 0) {
                     obj.set(`bar${SPEED_BAR}_link`, "");
@@ -282,9 +263,7 @@ const DMToolKit = (() => {
                 obj.set(`light_otherplayers`, false);
                 obj.set(`light_hassight`, false);
                 obj.set("status_dead", false);
-                setTimeout(function() {
-                    setDefaultTokenForCharacter(getObj("character", CharID), obj);
-                }, 500);
+                setTimeout(function() { setDefaultTokenForCharacter(getObj("character", CharID), obj); }, 500);
             });
         }
         if (Command === "!fow" && playerIsGM(msg.playerid)) {
@@ -320,7 +299,7 @@ const DMToolKit = (() => {
                         let CheckType = Check[0];
                         let CheckName = Check[1];
                         let CheckAbbr = Check[2];
-                        let Whisper = (Check[3] && Check[3].toUpperCase() !== "GM") ? "" : "/w GM ";
+                        let Whisper = (Check[3] && Check[3].toUpperCase() !== "GM") ? "": "/w GM ";
                         if (CheckType === "Check") sendChat(`character|${Character.id}`, `${Whisper}&{template:npc}{{name=${Token.get("name")}}} {{rname=${CheckName}}} {{mod=@{${Character.get("name")}|${CheckName}_mod} [${CheckAbbr}]}} {{r1=[[1d20+@{${Character.get("name")}|${CheckName}_mod} [${CheckAbbr}]]]}} @{${Character.get("name")}|rtype}+@{${Character.get("name")}|${CheckName}_mod} [${CheckAbbr}]]]}} {{type=${CheckType}}}`);
                         if (CheckType === "Save") sendChat(`character|${Character.id}`, `${Whisper}&{template:npc}{{name=${Token.get("name")}}} {{rname=${CheckName}}} {{mod=@{${Character.get("name")}|npc_${CheckAbbr}_save} [${CheckAbbr}]}} {{r1=[[1d20+@{${Character.get("name")}|npc_${CheckAbbr}_save} [${CheckAbbr}]]]}} @{${Character.get("name")}|rtype}+@{${Character.get("name")}|npc_${CheckAbbr}_save} [${CheckAbbr}]]]}} {{type=${CheckType}}}`);
                         if (CheckType === "Skill") sendChat(`character|${Character.id}`, `${Whisper}&{template:npc}{{name=${Token.get("name")}}} {{rname=${CheckName}}} {{mod=@{${Character.get("name")}|npc_${CheckName}}}} {{r1=[[1d20+@{${Character.get("name")}|npc_${CheckName}}]]}} @{${Character.get("name")}|rtype}+@{${Character.get("name")}|npc_${CheckName}}]]}} {{type=${CheckType}}}`);
@@ -341,10 +320,7 @@ const DMToolKit = (() => {
             var Amount = msg.content.split(" ")[1].replace(/^[\$|\+|\-|\[\[]+/, "").replace(/\]\]$/, "").trim();
             var TokenID = msg.content.split(" ")[2];
             if (Amount === undefined || (TokenID === undefined && msg.selected === undefined)) return;
-            if (msg.selected === undefined) msg.selected = [{
-                "_id": TokenID,
-                "_type": "graphic"
-            }];
+            if (msg.selected === undefined) msg.selected = [{"_id": TokenID,"_type": "graphic"}];
             _.each(msg.selected, function(a) {
                 var Token = getObj("graphic", a["_id"]);
                 if (Token !== undefined) adjustTokenHP(Command, Amount, Token);
@@ -414,22 +390,15 @@ const DMToolKit = (() => {
         if (Command === "!roll-init" && playerIsGM(msg.playerid) && msg.selected) {
             let turn_order = (!Campaign().get("turnorder")) ? [] : JSON.parse(Campaign().get("turnorder"));
             let token, mod, index;
-            _.each(msg.selected, function(a) {
+            _.each(msg.selected, function (a) {
                 token = getObj("graphic", a._id);
                 if (token.get("name") == "Round") {
-                    turn_order.push({
-                        id: a._id,
-                        pr: 999,
-                        formula: "+1"
-                    });
+                    turn_order.push({id: a._id, pr: 999, formula: "+1"});
                 } else {
                     mod = (token.get("represents") !== "" && getObj("character", token.get("represents")) !== undefined) ? parseInt(Math.floor((getAttrByName(token.get("represents"), "dexterity") - 10) / 2)) + parseInt(getAttrByName(token.get("represents"), "initmod")) : 0;
                     index = turn_order.findIndex(x => x.id == a._id);
                     if (index != -1) turn_order[index].pr = Math.floor((Math.random() * 20) + 1) + mod;
-                    else turn_order.push({
-                        id: a._id,
-                        pr: Math.floor((Math.random() * 20) + 1) + mod
-                    });
+                    else turn_order.push({id: a._id, pr: Math.floor((Math.random() * 20) + 1) + mod});
                 }
             });
             Campaign().set("initiativepage", true);
@@ -459,12 +428,7 @@ const DMToolKit = (() => {
             let Duration = msg.content.split("--")[2] || 999;
             let Owner = msg.content.split("--")[3] || "";
             if (Effect === "Error" || Duration === 999) return;
-            turn_order.push({
-                id: "-1",
-                pr: Duration,
-                custom: Effect.trim() + ((Owner !== "") ? ` (${Owner})` : ""),
-                formula: "-1"
-            });
+            turn_order.push({id: "-1", pr: Duration, custom: Effect.trim() + ((Owner !== "") ? ` (${Owner})` : ""), formula: "-1"});
             Campaign().set("initiativepage", true);
             Campaign().set("turnorder", JSON.stringify(turn_order));
         }
@@ -576,19 +540,19 @@ const DMToolKit = (() => {
                 if (Boolean(Number(getAttrByName(obj.get("represents"), "npc"))) === false) return;
                 if (obj.get("bar1_link") !== "" || obj.get("bar3_link") !== "") return;
                 let CharID = obj.get("represents");
-                let HPF = getAttrByName(CharID, "npc_hpformula") || "0d0+0";
-                let HitDie_Count = parseInt(HPF.split("d")[0], 10) || 0;
-                let HitDie_Size = parseInt(HPF.split("d")[1], 10) || 0;
-                let HitDie_Mod = parseInt(HPF.split("+")[1], 10) || 0;
-                let RandomHP = (RANDOM_NPC_HP) ? parseInt(Math.floor(Math.random() * ((HitDie_Count * HitDie_Size) - HitDie_Count + 1), 10) + HitDie_Count + HitDie_Mod) : getAttrByName(CharID, "npc_hp");
-                let Perception = (getAttrByName(CharID, "npc_perception") == "@{wisdom_mod}") ? getAttrByName(CharID, "wisdom_mod") : getAttrByName(CharID, "npc_perception");
-
-                // NPC Token Settings
+				let HPF = getAttrByName(CharID, "npc_hpformula") || "0d0+0";
+				let HitDie_Count = parseInt(HPF.split("d")[0], 10) || 0;
+				let HitDie_Size = parseInt(HPF.split("d")[1], 10) || 0;
+				let HitDie_Mod = parseInt(HPF.split("+")[1], 10) || 0;
+				let RandomHP = (RANDOM_NPC_HP) ? parseInt(Math.floor(Math.random() * ((HitDie_Count * HitDie_Size) - HitDie_Count + 1), 10) + HitDie_Count + HitDie_Mod) : getAttrByName(CharID, "npc_hp");
+				let Perception = (getAttrByName(CharID, "npc_perception") == "@{wisdom_mod}") ? getAttrByName(CharID, "wisdom_mod") : getAttrByName(CharID, "npc_perception");
+				
+				// NPC Token Settings
                 obj.set(`showname`, SHOW_NPC_NAMES);
                 obj.set(`showplayers_name`, SHOW_NPC_NAMES);
                 obj.set("showplayers_bar1", false);
-                obj.set("showplayers_bar2", false);
-                obj.set("showplayers_bar3", false);
+				obj.set("showplayers_bar2", false);
+				obj.set("showplayers_bar3", false);
                 obj.set(`showplayers_bar${HIT_POINT_BAR}`, SHOW_NPC_HITPOINTS);
                 if (ARMOR_CLASS_BAR !== 0) {
                     obj.set(`bar${ARMOR_CLASS_BAR}_link`, "");
@@ -603,7 +567,7 @@ const DMToolKit = (() => {
                 if (PASSIVE_PERCEPTION_BAR !== 0) {
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_link`, "");
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, ((NPC_STATS_PREFIX) ? "pp." : "") + (10 + parseInt(Perception)) + ((NPC_STATS_SUFFIX) ? " .... " + "PP" : ""));
-                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_max`, "");
+                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_max`, "");    
                 }
                 if (SPEED_BAR !== 0) {
                     obj.set(`bar${SPEED_BAR}_link`, "");
@@ -614,14 +578,12 @@ const DMToolKit = (() => {
                 obj.set(`light_dimradius`, "");
                 obj.set(`light_otherplayers`, false);
                 obj.set(`light_hassight`, false);
-                obj.set("status_dead", false);
-                setTimeout(function() {
-                    setDefaultTokenForCharacter(getObj("character", CharID), obj);
-                }, 500);
-            }
-        }, 500);
+				obj.set("status_dead", false);
+				setTimeout(function() { setDefaultTokenForCharacter(getObj("character", CharID), obj); }, 500);
+			}
+		}, 500);
     }
-    const handleTokenHPChange = function(obj, prev) {
+    const handleTokenHPChange = function (obj, prev) {
         if (obj.get("subtype") !== "token" || obj.get("isdrawing") === true || parseInt(prev[`bar${HIT_POINT_BAR}_value`], 10) === parseInt(obj.get(`bar${HIT_POINT_BAR}_value`), 10)) return;
         let HP_Previous = parseInt(prev[`bar${HIT_POINT_BAR}_value`], 10) || 0;
         let HP_Current = parseInt(obj.get(`bar${HIT_POINT_BAR}_value`), 10) || 0;
@@ -629,13 +591,13 @@ const DMToolKit = (() => {
         let HP_Change = HP_Previous - HP_Current;
         let isNPC = (obj.get("represents") !== "") ? Boolean(Number(getAttrByName(obj.get("represents"), "npc"))) : true;
         let TokenName = (obj.get("name") !== "" && ((SHOW_NPC_NAMES === true && obj.get("showplayers_name") === true) || isNPC === false)) ? obj.get("name") : "NPC";
-        damageNumber(obj, HP_Previous, HP_Current, HP_Max, HP_Max);
-        if (HP_Current > Math.floor(HP_Max / 2)) {
+        if (HP_Change > 0) damageNumber(obj, HP_Previous, HP_Current, HP_Max, HP_Max);
+        if (HP_Current > Math.floor(HP_Max/2)) {
             if (HP_Current > HP_Max) obj.set(`bar${HIT_POINT_BAR}_value`, HP_Max);
             obj.set("status_dead", false);
             obj.set("status_half-heart", false);
             obj.set("status_skull", false);
-        } else if (HP_Current <= Math.floor(HP_Max / 2) && HP_Current > 0) {
+        } else if (HP_Current <= Math.floor(HP_Max/2) && HP_Current > 0) {
             obj.set("status_half-heart", true);
             obj.set("status_dead", false);
             obj.set("status_skull", false);
@@ -644,9 +606,7 @@ const DMToolKit = (() => {
                 obj.set("status_dead", true);
                 if (JSON.parse(Campaign().get("turnorder")).length > 0) {
                     var Previous = JSON.parse(JSON.stringify(Campaign()));
-                    var TurnOrder = _.reject(JSON.parse(Campaign().get("turnorder")), function(a) {
-                        return a.id === obj.get("id")
-                    });
+                    var TurnOrder = _.reject(JSON.parse(Campaign().get("turnorder")), function(a) { return a.id === obj.get("id")});
                     if (TurnOrder[0].formula == "+1") TurnOrder[0].pr = TurnOrder[0].pr + 1;
                     Campaign().set("turnorder", JSON.stringify(TurnOrder));
                     handleTurnOrderChange(Campaign(), Previous);
@@ -659,12 +619,12 @@ const DMToolKit = (() => {
             obj.set("status_half-heart", false);
             obj.set(`bar${HIT_POINT_BAR}_value`, 0);
         }
-
-        if (CHECK_SYSTEM_SHOCK && HP_Current > 0 && HP_Change > Math.floor(HP_Max / 2)) {
+        
+        if (CHECK_SYSTEM_SHOCK && HP_Current > 0 && HP_Change > Math.floor(HP_Max/2)) {
             sendChat("DM Toolkit", `&{template:traits} {{name=Massive Damage}} {{description=<b>${TokenName}</b> has taken massive damage! Make a DC 15 Constitution saving throw. On a failure, roll System Shock (pg 273 DMG).}}`);
         }
     }
-    const handleTurnOrderChange = function(obj, prev) {
+    const handleTurnOrderChange = function (obj, prev) {
         let current = JSON.parse(obj.get("turnorder") || []);
         let previous = JSON.parse(prev["turnorder"]) || [];
         if (obj.get("turnorder") && !obj.get("initiativepage")) Campaign().set("initiativepage", true);
@@ -692,11 +652,11 @@ const DMToolKit = (() => {
         on(`change:token:bar${HIT_POINT_BAR}_value`, handleTokenHPChange);
         on(`chat:message`, handleInput);
         on(`destroy:graphic`, handleDeletedToken);
-        on(`change:attribute`, enforceDefaults);
+        //on(`change:attribute`, enforceDefaults);
         log("-=> DMToolkit v" + DMToolkit_Version + " <=- [" + (new Date(DMToolkit_LastUpdated * 1000)) + "]");
         //log(Date.now().toString().substr(0, 10));
     }
-    const scaleFont = function(height, width, hpChange, hpMax) {
+    const scaleFont = function(height, width, hpChange, hpMax){
         const pxPerUnit = 70;
         let scaledFont = config.fontSize;
         if (config.tokenSizeScaling) {
@@ -710,20 +670,18 @@ const DMToolKit = (() => {
         return Object.keys(obj).sort().reduce((r, k) => (r[k] = obj[k], r), {});
     }
     const updateDamageNumber = function(number, targetTop, steps) {
-        if (steps <= 0) {
+        if(steps <= 0) {
             number.remove();
             return;
         }
-
+        
         let top = number.get('top');
         top += (targetTop - top) * 0.3;
         number.set('top', top);
-        setTimeout(function() {
+        setTimeout(function () {
             updateDamageNumber(number, targetTop, steps - 1);
         }, 50);
     }
 
-    on("ready", function() {
-        registerEventHandlers();
-    });
+    on("ready", function() { registerEventHandlers(); });
 })();
