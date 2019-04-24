@@ -35,8 +35,8 @@ const DMToolKit = (() => {
     
     // VERSION INFORMATION
     const DMToolkit_Author = "Sky";
-    const DMToolkit_Version = "4.5.2"; // Removed prefix & suffix options for NPC's due to Roll20 "upgrades"
-    const DMToolkit_LastUpdated = 1556064124;
+    const DMToolkit_Version = "4.5.3"; // Removed prefix & suffix options for NPC's due to Roll20 "upgrades"
+    const DMToolkit_LastUpdated = 1556064511;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -238,7 +238,7 @@ const DMToolKit = (() => {
                 obj.set(`showplayers_bar${HIT_POINT_BAR}`, SHOW_NPC_HITPOINTS);
                 if (ARMOR_CLASS_BAR !== 0) {
                     obj.set(`bar${ARMOR_CLASS_BAR}_link`, "");
-                    obj.set(`bar${ARMOR_CLASS_BAR}_value`, ((NPC_STATS_PREFIX) ? "ac." : "") + getAttrByName(CharID, "npc_ac") + ((NPC_STATS_SUFFIX) ? " .... " + "AC" : ""));
+                    obj.set(`bar${ARMOR_CLASS_BAR}_value`, getAttrByName(CharID, "npc_ac"));
                     obj.set(`bar${ARMOR_CLASS_BAR}_max`, "");
                 }
                 if (HIT_POINT_BAR !== 0) {
@@ -248,7 +248,7 @@ const DMToolKit = (() => {
                 }
                 if (PASSIVE_PERCEPTION_BAR !== 0) {
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_link`, "");
-                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, ((NPC_STATS_PREFIX) ? "pp." : "") + parseInt(10 + Perception) + ((NPC_STATS_SUFFIX) ? " .... " + "PP" : ""));
+                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, (10 + parseInt(Perception)));
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_max`, "");    
                 }
                 if (SPEED_BAR !== 0) {
