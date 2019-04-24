@@ -9,8 +9,6 @@ const DMToolKit = (() => {
     const ANNOUNCE_NEW_TURN     = true;
     const CHECK_INSTANT_DEATH   = true;
     const CHECK_SYSTEM_SHOCK    = false;
-    const NPC_STATS_PREFIX      = false;
-    const NPC_STATS_SUFFIX      = false;
     const NPC_COLOR             = "#444444";
     const PC_COLOR              = "#073763";
     const PULL_GM_TO_TOKEN      = true;
@@ -37,8 +35,8 @@ const DMToolKit = (() => {
     
     // VERSION INFORMATION
     const DMToolkit_Author = "Sky";
-    const DMToolkit_Version = "4.5.1"; // Fixed floating numbers copy & paste issue
-    const DMToolkit_LastUpdated = 1556062615;
+    const DMToolkit_Version = "4.5.2"; // Removed prefix & suffix options for NPC's due to Roll20 "upgrades"
+    const DMToolkit_LastUpdated = 1556064124;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -556,7 +554,7 @@ const DMToolKit = (() => {
                 obj.set(`showplayers_bar${HIT_POINT_BAR}`, SHOW_NPC_HITPOINTS);
                 if (ARMOR_CLASS_BAR !== 0) {
                     obj.set(`bar${ARMOR_CLASS_BAR}_link`, "");
-                    obj.set(`bar${ARMOR_CLASS_BAR}_value`, ((NPC_STATS_PREFIX) ? "ac." : "") + getAttrByName(CharID, "npc_ac") + ((NPC_STATS_SUFFIX) ? " .... " + "AC" : ""));
+                    obj.set(`bar${ARMOR_CLASS_BAR}_value`, getAttrByName(CharID, "npc_ac"));
                     obj.set(`bar${ARMOR_CLASS_BAR}_max`, "");
                 }
                 if (HIT_POINT_BAR !== 0) {
@@ -566,7 +564,7 @@ const DMToolKit = (() => {
                 }
                 if (PASSIVE_PERCEPTION_BAR !== 0) {
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_link`, "");
-                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, ((NPC_STATS_PREFIX) ? "pp." : "") + (10 + parseInt(Perception)) + ((NPC_STATS_SUFFIX) ? " .... " + "PP" : ""));
+                    obj.set(`bar${PASSIVE_PERCEPTION_BAR}_value`, (10 + parseInt(Perception)));
                     obj.set(`bar${PASSIVE_PERCEPTION_BAR}_max`, "");    
                 }
                 if (SPEED_BAR !== 0) {
