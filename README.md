@@ -92,6 +92,8 @@ Last, but not least is the user configuration section. Use these variables to cu
   * Sets the NPC color for turn order announcements.
 * const PC_COLOR              = "#073763";
   * Sets the PC color for turn order announcements if USE_PLAYER_COLOR is false.
+* const RANDOM_NPC_HP          = true;
+  * Will randomly roll npc hp based on the npc_hpformula attribute on the 5e OGL Character Sheet
 * const PULL_GM_TO_TOKEN      = true;
   * If true, will pull the GM to the location of the token at the top of the turn order.
 * const RANDOM_NPC_HP         = true;
@@ -104,7 +106,9 @@ Last, but not least is the user configuration section. Use these variables to cu
   * Allows players to see the hp bars of npc tokens. It does not let them see the actual hit points.
 * const SHOW_NPC_NAMES        = true;
   * Shows NPC names in the turn order tracker and chat announcements.
-* const SHOW_NPC_STATBLOCK    = true;
+* const SHOW_NPC_NOACTIONS    = true;
   * Whispers an npc statblock to the GM when the npc is at the top of the turn order.
+* const SHOW_NPC_ACTIONS    = true;
+  * Whispers an npc statblock to the GM when the npc is at the top of the turn order and includes their Action buttons.
 * const USE_PLAYER_COLOR      = true;
   * Uses the player's selected color next to their name at the bottom of Roll20 for turn order announcements.
