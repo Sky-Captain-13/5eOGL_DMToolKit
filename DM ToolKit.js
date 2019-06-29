@@ -17,7 +17,8 @@ const DMToolKit = (() => {
     const SHOW_HALF_HITPOINTS   = true;
     const SHOW_NPC_HITPOINTS    = false;
     const SHOW_NPC_NAMES        = true;
-    const SHOW_NPC_STATBLOCK    = true;
+    const SHOW_NPC_NOACTIONS    = true;
+    const SHOW_NPC_ACTIONS      = false;
     const USE_PLAYER_COLOR      = true;
     
     // FLOATING DAMAGE CONFIGURATION
@@ -35,8 +36,8 @@ const DMToolKit = (() => {
     
     // VERSION INFORMATION
     const DMToolkit_Author = "Sky";
-    const DMToolkit_Version = "4.5.5"; // Adjusted npc statblock on turn order, removed actions
-    const DMToolkit_LastUpdated = 1561178746;
+    const DMToolkit_Version = "4.5.6"; // Adjusted npc statblock on turn order, added actions back in as an option
+    const DMToolkit_LastUpdated = 1561785657;
     
 	// FUNCTIONS
 	const adjustTokenHP = function(Command, Amount, Token) {
@@ -87,8 +88,22 @@ const DMToolKit = (() => {
             let Avatar = (Token !== undefined && Token.get("type") === "graphic") ? `<img src='` + Token.get("imgsrc") + `' style='float: right; height: 40px; width: 40px; margin: -32px -10px 0px 0px;'></img>` : "";
             let AbilityStyle = "display: inline-block; width: 33%; text-align: center; font-family: Candal; font-size: 13px;";
             sendChat("", `/desc <div style='${OuterStyle}'><div style='${InnerStyle}'><span style='padding-right: 20px;'>${Message}</span></div>${Avatar}</div>`);
-            if (SHOW_NPC_STATBLOCK && isNPC && Character !== "" && Character !== undefined) sendChat("DM ToolKit", `/w GM &{template:traits} {{description=<span style="font-family: Candal; font-size: 13px;">**Speed:** ${getAttrByName(Character.id, "npc_speed").replace("ft.", "ft")}<br>**Senses:** ${getAttrByName(Character.id, "npc_senses").replace("blindsight", "Blindsight").replace("darkvision", "Darkvision").replace("passive", "Passive").replace(" , ", "").replace("ft.", "ft")}</span>}}`);
-            // **Ability Scores:**<div style='1px solid #000;'><div style='${AbilityStyle}'>STR ${getAttrByName(Character.id, "strength")}</div><div style='${AbilityStyle}'>DEX ${getAttrByName(Character.id, "dexterity")}</div><div style='${AbilityStyle}'>CON ${getAttrByName(Character.id, "constitution")}</div></div><div style='1px solid #000;'><div style='${AbilityStyle}'>INT ${getAttrByName(Character.id, "intelligence")}</div><div style='${AbilityStyle}'>WIS ${getAttrByName(Character.id, "wisdom")}</div><div style='${AbilityStyle}'>CHA ${getAttrByName(Character.id, "charisma")}</div></div>
+            if (SHOW_NPC_NOACTIONS && !SHOW_NPC_ACTIONS && isNPC && Character !== "" && Character !== undefined) sendChat("DM ToolKit", `/w GM &{template:traits} {{description=<span style="font-family: Candal; font-size: 13px;">**Speed:** ${getAttrByName(Character.id, "npc_speed").replace("ft.", "ft")}<br>**Senses:** ${getAttrByName(Character.id, "npc_senses").replace("blindsight", "Blindsight").replace("darkvision", "Darkvision").replace("passive", "Passive").replace(" , ", "").replace("ft.", "ft")}</span>}}`);
+            if (SHOW_NPC_ACTIONS && isNPC && Character !== "" && Character !== undefined) {
+                let action_style = "color: #404040; background-color: #DCDCDC; border: 1px solid #404040; border-radius: 3px; margin: 1px; padding: 0px 5px; text-decoration: none;"
+                let npc_statblock = `/w GM &{template:traits} {{description=<span style="font-family: Candal; font-size: 13px;">**Speed:** ${getAttrByName(Character.id, "npc_speed")}<br>**Senses:** ${getAttrByName(Character.id, "npc_senses").replace("blindsight", "Blindsight").replace("darkvision", "Darkvision").replace("passive", "Passive").replace(" , ", "").replace("ft.", "ft")}<br>**Actions:** `;
+                let actions_list = filterObjs( function(a) { return (a.get("characterid") === Character.id && a.get("name").startsWith("repeating_npcaction") && a.get("name").endsWith("_name")); });
+                let action_list = [];
+                let legend_list = [];
+                _.each(actions_list, function(b) { (b.get("name").startsWith("repeating_npcaction_")) ? action_list.push(b) : legend_list.push(b); });
+                _.each(action_list, function(c) { npc_statblock += `<a href='~${Character.get("name")}|${c.get("name").split("_name")[0]}_npc_action' style='${action_style}'>${c.get("current")}</a>`; });
+                if (_.isEmpty(legend_list) === false) {
+                    npc_statblock += "<br>**Legendary Actions:**<br>";
+                    _.each(legend_list, function(d) { npc_statblock += `<a href='~${Character.get("name")}|${d.get("name").split("_name")[0]}_npc_action' style='${action_style}'>${d.get("current")}</a>`; });
+                }
+                sendChat("DM ToolKit", (npc_statblock += "</span>}}"));
+            }
+            //sendChat("", `/desc <div style='${OuterStyle}'><div style='${InnerStyle}'><span style='padding-right: 20px;'>${Message}</span></div>${Avatar}</div>`);
         }
 	}
 	const damageNumber = function(token, hpChange, hpPrevious, hpCurrent, hpMax) {
